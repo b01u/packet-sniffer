@@ -8,6 +8,7 @@ int main(int argc, char const *argv[]){
     char                errbuf[PCAP_ERRBUF_SIZE];
     char                packetFilterString[128];
 	char                *device;
+    int                 activateStatus;
     int                 datalinkType;
     int                 maxBytesToCapture = 65535;
 	pcap_t              *packetDescriptor;
@@ -39,22 +40,33 @@ int main(int argc, char const *argv[]){
 	}
 
     /* Obtain a descriptor to monitor the hardware: */
-    if ( (packetDescriptor = pcap_open_live(device, maxBytesToCapture, 1, 512, errbuf)) < 0 ){
-        fprintf(stderr, "[FAIL] pcap_open_live returned: \"%s\"\n", errbuf);
+    if ( !(packetDescriptor = pcap_create(device, errbuf)) ){
+        fprintf(stderr, "[FAIL] pcap_create returned: \"%s\"\n", errbuf);
         free(sniffArgs);
-        return 1;
+        return 1;        
     } else printf("[INFO] Obtained Socket Descriptor.\n");
 
     if (pcap_can_set_rfmon(packetDescriptor) != 1){
         fprintf(stderr, "[FAIL] Interface can not be put into monitor mode. Quitting.\n");
+        free(sniffArgs);
         return 1;
     } else if (pcap_set_rfmon(packetDescriptor, 1)){        
         fprintf(stderr, "[FAIL] Error while setting interface into monitor mode. Quitting.\n");
+        free(sniffArgs);
         return 1;
+    } else printf("[INFO] Network interface set to monitor mode.\n");
+
+    pcap_set_snaplen(packetDescriptor, maxBytesToCapture);
+    pcap_set_promisc(packetDescriptor, 0);
+    pcap_set_timeout(packetDescriptor, 512);
+
+    if ( (activateStatus = pcap_activate(packetDescriptor)) ){
+        fprintf(stderr, "[FAIL] Error while activating pcap: %d\n", activateStatus);
+        free(sniffArgs);
+        return 1;        
     }
-
-
-	/* Determine the data link type of the descriptor we obtained: */
+	
+    /* Determine the data link type of the descriptor we obtained: */
     if ((datalinkType = pcap_datalink(packetDescriptor)) < 0 ){
         fprintf(stderr, "[FAIL] pcap_datalink returned: \"%s\"\n", pcap_geterr(packetDescriptor));
         free(sniffArgs);
