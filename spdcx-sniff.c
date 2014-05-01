@@ -46,6 +46,7 @@ int main(int argc, char const *argv[]){
         return 1;        
     } else printf("[INFO] Obtained Socket Descriptor.\n");
 
+/*
     if (pcap_can_set_rfmon(packetDescriptor) != 1){
         fprintf(stderr, "[FAIL] Interface can not be put into monitor mode. Quitting.\n");
         free(sniffArgs);
@@ -55,9 +56,9 @@ int main(int argc, char const *argv[]){
         free(sniffArgs);
         return 1;
     } else printf("[INFO] Network interface set to monitor mode.\n");
-
+*/
     pcap_set_snaplen(packetDescriptor, maxBytesToCapture);
-    pcap_set_promisc(packetDescriptor, 0);
+    pcap_set_promisc(packetDescriptor, 1);
     pcap_set_timeout(packetDescriptor, 512);
 
     if ( (activateStatus = pcap_activate(packetDescriptor)) ){
@@ -159,6 +160,7 @@ void processPacket(u_char *arg, const struct pcap_pkthdr *pktHeader, const u_cha
 
     printf("NETWORK:\n\t{");
     printf("\"ID\":%d, ", ntohs(ipHeader->ip_id));
+    printf("\"Protocol Type\":%d, ", ipHeader->ip_p);
     printf("\"Service Type\":0x%x, ", ipHeader->ip_tos);
     printf("\"TTL\":%d, ", ipHeader->ip_ttl);
     printf("\"Header Length\":%d, ", 4 * ipHeader->ip_hl);
@@ -218,6 +220,7 @@ void processPacket(u_char *arg, const struct pcap_pkthdr *pktHeader, const u_cha
 
         default:
             printf("\"Protocol\":0x%x", ipHeader->ip_p);
+            printf("}\n");
             break;
     }
 
