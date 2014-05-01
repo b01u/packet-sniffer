@@ -45,6 +45,15 @@ int main(int argc, char const *argv[]){
         return 1;
     } else printf("[INFO] Obtained Socket Descriptor.\n");
 
+    if (pcap_can_set_rfmon(packetDescriptor) != 1){
+        fprintf(stderr, "[FAIL] Interface can not be put into monitor mode. Quitting.\n");
+        return 1;
+    } else if (pcap_set_rfmon(packetDescriptor, 1)){        
+        fprintf(stderr, "[FAIL] Error while setting interface into monitor mode. Quitting.\n");
+        return 1;
+    }
+
+
 	/* Determine the data link type of the descriptor we obtained: */
     if ((datalinkType = pcap_datalink(packetDescriptor)) < 0 ){
         fprintf(stderr, "[FAIL] pcap_datalink returned: \"%s\"\n", pcap_geterr(packetDescriptor));
