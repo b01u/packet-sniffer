@@ -58,8 +58,13 @@ int main(int argc, char const *argv[]){
     } else printf("[INFO] Network interface set to monitor mode.\n");
 */
     pcap_set_snaplen(packetDescriptor, maxBytesToCapture);
-    pcap_set_promisc(packetDescriptor, 1);
     pcap_set_timeout(packetDescriptor, 512);
+
+    if ( pcap_set_promisc(packetDescriptor, 1) ) {        
+        fprintf(stderr, "[FAIL] Could not set interface to promiscuous mode.");
+        free(sniffArgs);
+        return 1;        
+    } else printf("[INFO] Set interface to promiscuous mode.\n");
 
     if ( (activateStatus = pcap_activate(packetDescriptor)) ){
         fprintf(stderr, "[FAIL] Error while activating pcap: %d\n", activateStatus);
