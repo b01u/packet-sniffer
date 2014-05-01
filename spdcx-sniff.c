@@ -92,6 +92,7 @@ int main(int argc, char const *argv[]){
 	        break;
 	 
 	 	case DLT_IEEE802_11:
+        case DLT_IEEE802_11_RADIO:
 	    	sniffArgs->dataLinkOffset = 22;
 			printf("Listening on an Wireless connection. Data Link Offset: 22\n");
 	        break;
